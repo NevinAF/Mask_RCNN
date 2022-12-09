@@ -174,7 +174,7 @@ class MahjongTileDataset(utils.Dataset):
 
 		mask = np.dstack(instance_masks)
 
-		return mask.astype(np.bool), np.ones([mask.shape[-1]], dtype=np.int32)
+		return mask.astype(np.bool_), np.ones([mask.shape[-1]], dtype=np.int32)
 
 	def image_reference(self, image_id):
 		"""Return the path of the image."""

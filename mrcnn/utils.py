@@ -22,7 +22,9 @@ from skimage.util import img_as_float
 import urllib.request
 import shutil
 import warnings
+import matplotlib.pyplot as plt
 from distutils.version import LooseVersion
+import cv2
 
 # URL from which to download the latest COCO trained weights
 COCO_MODEL_URL = "https://github.com/matterport/Mask_RCNN/releases/download/v2.0/mask_rcnn_coco.h5"
@@ -887,27 +889,16 @@ def denorm_boxes(boxes, shape):
 
 def resize(image, output_shape, order=1, mode='constant', cval=0, clip=True,
            preserve_range=False, anti_aliasing=False, anti_aliasing_sigma=None):
-    """A wrapper for Scikit-Image resize().
-
-    Scikit-Image generates warnings on every call to resize() if it doesn't
-    receive the right parameters. The right parameters depend on the version
-    of skimage. This solves the problem by using different parameters per
-    version. And it provides a central place to control resizing defaults.
+    """A wrapper cv2 resize.
     """
+    # output shape is in (height, width) format, so swap it to (width, height)
+    output_shape = (output_shape[1], output_shape[0])
 
-    return_type = image.dtype
-    imgf = img_as_float(image)
+    # if image is a bool image, convert to a material image
+    if image.dtype == np.bool:
+        image = image.astype(np.uint8) * 255
+        image = cv2.resize(image, output_shape, interpolation=cv2.INTER_LINEAR)
+        return image.astype(np.bool)
 
-    if LooseVersion(skimage.__version__) >= LooseVersion("0.14"):
-        # New in 0.14: anti_aliasing. Default it to False for backward
-        # compatibility with skimage 0.13.
-        return skimage.transform.resize(
-            imgf, output_shape,
-            order=order, mode=mode, cval=cval, clip=clip,
-            preserve_range=preserve_range, anti_aliasing=anti_aliasing,
-            anti_aliasing_sigma=anti_aliasing_sigma).astype(return_type)
-    else:
-        return skimage.transform.resize(
-            imgf, output_shape,
-            order=order, mode=mode, cval=cval, clip=clip,
-            preserve_range=preserve_range).astype(return_type)
+    return cv2.resize(image, output_shape, interpolation=cv2.INTER_LINEAR)
+

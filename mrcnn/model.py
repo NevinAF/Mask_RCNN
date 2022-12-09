@@ -22,6 +22,9 @@ import tensorflow.keras.utils as KU
 from tensorflow.python.eager import context
 import tensorflow.keras.models as KM
 
+import matplotlib.pyplot as plt
+import cv2
+
 from mrcnn import utils
 
 # Requires TensorFlow 2.0+
@@ -1231,7 +1234,20 @@ def load_image_gt(dataset, config, image_id, augmentation=None):
     """
     # Load image and mask
     image = dataset.load_image(image_id)
+
+    # plt.imshow(image)
+    # plt.show()
+
     mask, class_ids = dataset.load_mask(image_id)
+
+    # For each mask, show the mask on top of the image
+    # Mask is a 3D array, first index is the mask number, second and third are the image pixels
+    # for i in range(mask.shape[2]):
+    #     displayImage = cv2.bitwise_and(image, image, mask=mask[:, :, i].astype(np.uint8) * 255)
+    #     plt.imshow(displayImage)
+    #     plt.show()
+
+
     original_shape = image.shape
     image, window, scale, padding, crop = utils.resize_image(
         image,
@@ -1240,6 +1256,10 @@ def load_image_gt(dataset, config, image_id, augmentation=None):
         max_dim=config.IMAGE_MAX_DIM,
         mode=config.IMAGE_RESIZE_MODE)
     mask = utils.resize_mask(mask, scale, padding, crop)
+
+    # Draw the mask on the image to show the user
+
+    
 
     # Augmentation
     # This requires the imgaug lib (https://github.com/aleju/imgaug)
@@ -1296,6 +1316,9 @@ def load_image_gt(dataset, config, image_id, augmentation=None):
     # Image meta data
     image_meta = compose_image_meta(image_id, original_shape, image.shape,
                                     window, scale, active_class_ids)
+
+    # plt.imshow(image)
+    # plt.show()
 
     return image, image_meta, class_ids, bbox, mask
 
