@@ -154,11 +154,11 @@ class MahjongTileDataset(utils.Dataset):
 		"""
 		image_info = self.image_info[image_id]
 		annotations = image_info['annotations']
-		instance_masks: list[np.ndarray] = []
+		masks = np.zeros([image_info['height'], image_info['width'], len(annotations)], dtype=np.uint8)
 
-		for annotation in annotations:
-			class_id = annotation['category_id']
-			RLE = annotation['segmentation']
+		for i in range(len(annotations)):
+			class_id = annotations[i]['category_id']
+			RLE = annotations[i]['segmentation']
 
 			if type(RLE) == dict:
 				# Polygon
@@ -168,13 +168,12 @@ class MahjongTileDataset(utils.Dataset):
 				mask = Image.new('1', (image_info['width'], image_info['height']))
 				mask_draw = ImageDraw.ImageDraw(mask, '1')
 				mask_draw.polygon(RLE[0], fill=1)
-			
-			bool_array = np.array(mask) > 0
-			instance_masks.append(bool_array)
+				mask = np.array(mask)
 
-		mask = np.dstack(instance_masks)
+			# Add the mask to the image
+			masks[:, :, i] = mask
 
-		return mask.astype(np.bool_), np.ones([mask.shape[-1]], dtype=np.int32)
+		return masks.astype(np.bool_), np.ones([masks.shape[-1]], dtype=np.int32)
 
 	def image_reference(self, image_id):
 		"""Return the path of the image."""
