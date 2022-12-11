@@ -76,6 +76,8 @@ class MahjongTileConfig(Config):
 	# Skip detections with < 90% confidence
 	DETECTION_MIN_CONFIDENCE = 0.9
 
+	USE_MINI_MASK = False
+
 
 ############################################################
 #  Dataset
